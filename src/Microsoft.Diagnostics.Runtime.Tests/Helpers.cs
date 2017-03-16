@@ -42,6 +42,14 @@ namespace Microsoft.Diagnostics.Runtime.Tests
                     select module).Single();
         }
 
+        public static ClrModule GetExecutable(this ClrRuntime runtime)
+        {
+            return (from module in runtime.Modules
+                    let file = Path.GetFileName(module.FileName)
+                    where file.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                    select module).Single();
+        }
+
 
         public static ClrThread GetMainThread(this ClrRuntime runtime)
         {

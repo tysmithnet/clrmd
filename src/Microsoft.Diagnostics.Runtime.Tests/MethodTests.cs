@@ -75,13 +75,27 @@ namespace Microsoft.Diagnostics.Runtime.Tests
 
             using (DataTarget dt = TestTargets.Types.LoadFullDump())
             {
-
                 ClrRuntime runtime = dt.ClrVersions.Single().CreateRuntime();
 
                 ClrModule module = runtime.GetModule("sharedlibrary.dll");
                 ClrType type = module.GetTypeByName("Foo");
                 ClrMethod method = type.GetMethod("Bar");
                 Assert.AreEqual(methodDesc, method.EnumerateMethodDescs().Single());
+            }
+        }
+
+        [TestMethod]
+        public void GenericMethodNameTests()
+        {
+            using (DataTarget dt = TestTargets.Types.LoadFullDump())
+            {
+                ClrRuntime runtime = dt.ClrVersions.Single().CreateRuntime();
+
+                ClrModule module = runtime.GetExecutable();
+                ClrType type = module.GetTypeByName("Types");
+                ClrMethod method = type.GetMethod("GenericMethod");
+
+                Assert.AreEqual("GenericMethod", method.Name);
             }
         }
     }

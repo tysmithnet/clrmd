@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 class Types
 {
@@ -25,5 +26,10 @@ class Types
     private static void Inner()
     {
         throw new Exception();
+    }
+
+    private static async void GenericMethod<T, V>(string s, T t, int i, V v, double d)
+    {
+        await Task.Delay(500);
     }
 }
