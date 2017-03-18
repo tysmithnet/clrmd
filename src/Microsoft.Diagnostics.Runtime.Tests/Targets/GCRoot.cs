@@ -34,8 +34,9 @@ class GCRootTarget
 
 
         s.Item1 = target;
+        GC.Collect();
         throw new Exception();
-        GC.KeepAlive(target);
+        GC.KeepAlive(s);    // Ensure a stack slot remains for the stack root.
     }
 }
 

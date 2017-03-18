@@ -2,6 +2,7 @@
 using Microsoft.Diagnostics.Runtime.Tests;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -138,6 +139,19 @@ namespace GCRootDemo
                     Console.Write($"{rootPath.Root} -> ");
                     Console.WriteLine(string.Join(" -> ", rootPath.Path.Select(obj => obj.Address)));
                 }
+
+                HashSet<ulong> notFound = new HashSet<ulong>();
+
+                int objCount = heap.EnumerateObjectAddresses().Count();
+                foreach (ulong obj in heap.EnumerateObjectAddresses())
+                {
+                    if (gcroot.EnumerateGCRoots(obj, CancellationToken.None).Count() == 0)
+                        notFound.Add(obj);
+                }
+
+                using (var file = File.CreateText("out.txt"))
+                foreach (ulong obj in notFound)
+                    file.WriteLine($"{obj:x12} {heap.GetObjectType(obj)}");
             }
         }
 

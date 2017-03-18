@@ -131,7 +131,7 @@ namespace Microsoft.Diagnostics.Runtime.Tests
 
 
         [TestMethod]
-        public void EnumerateAllPathshCancel()
+        public void EnumerateAllPathsCancel()
         {
             using (DataTarget dataTarget = TestTargets.GCRoot.LoadFullDump())
             {
@@ -327,6 +327,25 @@ namespace Microsoft.Diagnostics.Runtime.Tests
             ClrObject last = path.Last();
             Assert.AreEqual(last.Type, heap.GetObjectType(last.Address));
             Assert.AreEqual(target, last.Address);
+        }
+
+        [TestMethod]
+        public void EnsureAllObjectsAreRooted()
+        {
+            using (DataTarget dataTarget = TestTargets.GCRoot.LoadFullDump())
+            {
+                ClrRuntime runtime = dataTarget.ClrVersions.Single().CreateRuntime();
+                ClrHeap heap = runtime.Heap;
+                GCRoot gcroot = new GCRoot(heap);
+
+                gcroot.BuildCache(CancellationToken.None);
+
+                foreach (ulong obj in heap.EnumerateObjectAddresses())
+                {
+                    RootPath path = gcroot.EnumerateGCRoots(obj, CancellationToken.None).FirstOrDefault();
+                    Assert.IsNotNull(path.Root);
+                }
+            }
         }
     }
 }
