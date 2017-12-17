@@ -36,10 +36,7 @@ namespace Microsoft.Diagnostics.Runtime
         public ClrObject(ulong address, ClrType type)
         {
             _address = address;
-            _type = type;
-
-            Debug.Assert(address == 0 || type != null);
-            Debug.Assert(address == 0 || type.Heap.GetObjectType(address) == type);
+            _type = type;                                           
         }
         
         /// <summary>
