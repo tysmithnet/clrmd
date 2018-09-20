@@ -4,14 +4,160 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Triage.Mortician.Core.ClrMdAbstractions;
 
 namespace Microsoft.Diagnostics.Runtime
 {
     /// <summary>
+    /// The architecture of a process.
+    /// </summary>
+    public enum Architecture
+    {
+        /// <summary>
+        /// Unknown.  Should never be exposed except in case of error.
+        /// </summary>
+        Unknown,
+
+        /// <summary>
+        /// x86.
+        /// </summary>
+        X86,
+
+        /// <summary>
+        /// x64
+        /// </summary>
+        Amd64,
+
+        /// <summary>
+        /// ARM
+        /// </summary>
+        Arm
+    }
+
+    /// <summary>
+    /// This is a representation of the metadata element type.  These values
+    /// directly correspond with Clr's CorElementType.
+    /// </summary>
+    public enum ClrElementType
+    {
+        /// <summary>
+        /// Not one of the other types.
+        /// </summary>
+        Unknown = 0x0,
+        /// <summary>
+        /// ELEMENT_TYPE_BOOLEAN
+        /// </summary>
+        Boolean = 0x2,
+        /// <summary>
+        /// ELEMENT_TYPE_CHAR
+        /// </summary>
+        Char = 0x3,
+
+        /// <summary>
+        /// ELEMENT_TYPE_I1
+        /// </summary>
+        Int8 = 0x4,
+
+        /// <summary>
+        /// ELEMENT_TYPE_U1
+        /// </summary>
+        UInt8 = 0x5,
+
+        /// <summary>
+        /// ELEMENT_TYPE_I2
+        /// </summary>
+        Int16 = 0x6,
+
+        /// <summary>
+        /// ELEMENT_TYPE_U2
+        /// </summary>
+        UInt16 = 0x7,
+
+        /// <summary>
+        /// ELEMENT_TYPE_I4
+        /// </summary>
+        Int32 = 0x8,
+
+        /// <summary>
+        /// ELEMENT_TYPE_U4
+        /// </summary>
+        UInt32 = 0x9,
+
+        /// <summary>
+        /// ELEMENT_TYPE_I8
+        /// </summary>
+        Int64 = 0xa,
+
+        /// <summary>
+        /// ELEMENT_TYPE_U8
+        /// </summary>
+        UInt64 = 0xb,
+
+        /// <summary>
+        /// ELEMENT_TYPE_R4
+        /// </summary>
+        Float = 0xc,
+
+        /// <summary>
+        /// ELEMENT_TYPE_R8
+        /// </summary>
+        Double = 0xd,
+
+        /// <summary>
+        /// ELEMENT_TYPE_STRING
+        /// </summary>
+        String = 0xe,
+
+        /// <summary>
+        /// ELEMENT_TYPE_PTR
+        /// </summary>
+        Pointer = 0xf,
+
+        /// <summary>
+        /// ELEMENT_TYPE_VALUETYPE
+        /// </summary>
+        Struct = 0x11,
+
+        /// <summary>
+        /// ELEMENT_TYPE_CLASS
+        /// </summary>
+        Class = 0x12,
+
+        /// <summary>
+        /// ELEMENT_TYPE_ARRAY
+        /// </summary>
+        Array = 0x14,
+
+        /// <summary>
+        /// ELEMENT_TYPE_I
+        /// </summary>
+        NativeInt = 0x18,
+
+        /// <summary>
+        /// ELEMENT_TYPE_U
+        /// </summary>
+        NativeUInt = 0x19,
+
+        /// <summary>
+        /// ELEMENT_TYPE_FNPTR
+        /// </summary>
+        FunctionPointer = 0x1B,
+
+        /// <summary>
+        /// ELEMENT_TYPE_OBJECT
+        /// </summary>
+        Object = 0x1C,
+
+        /// <summary>
+        /// ELEMENT_TYPE_SZARRAY
+        /// </summary>
+        SZArray = 0x1D,
+    }
+
+
+    /// <summary>
     /// An interface implementation in the target process.
     /// </summary>
-    public abstract class ClrInterface : IClrInterface
+    public abstract class ClrInterface
     {
         /// <summary>
         /// The typename of the interface.
@@ -77,7 +223,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// A representation of a type in the target process.
     /// </summary>
-    public abstract class ClrType : IClrType
+    public abstract class ClrType
     {
         abstract internal GCDesc GCDesc { get; }
 
@@ -470,7 +616,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// A representation of a field in the target process.
     /// </summary>
-    public abstract class ClrField : IClrField
+    public abstract class ClrField
     {
         /// <summary>
         /// The name of the field.
@@ -565,7 +711,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Represents an instance field of a type.   Fundamentally it respresents a name and a type 
     /// </summary>
-    public abstract class ClrInstanceField : ClrField, IClrInstanceField
+    public abstract class ClrInstanceField : ClrField
     {
         /// <summary>
         /// Returns the value of this field.  Equivalent to GetFieldValue(objRef, false).
@@ -626,7 +772,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Represents a static field in the target process.
     /// </summary>
-    public abstract class ClrStaticField : ClrField, IClrStaticField
+    public abstract class ClrStaticField : ClrField
     {
         /// <summary>
         /// Returns whether this static field has been initialized in a particular AppDomain
@@ -680,7 +826,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Represents a thread static value in the target process.
     /// </summary>
-    public abstract class ClrThreadStaticField : ClrField, IClrThreadStaticField
+    public abstract class ClrThreadStaticField : ClrField
     {
         /// <summary>
         /// Gets the value of the field.
@@ -717,7 +863,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// Create this using GCHeap.GetExceptionObject.  You may call that when GCHeapType.IsException
     /// returns true.
     /// </summary>
-    public abstract class ClrException : IClrException
+    public abstract class ClrException
     {
         /// <summary>
         /// Returns the GCHeapType for this exception object.
@@ -755,7 +901,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// The COM implementation details of a single CCW entry.
     /// </summary>
-    public abstract class ComInterfaceData : IComInterfaceData
+    public abstract class ComInterfaceData
     {
         /// <summary>
         /// The CLR type this represents.
@@ -772,7 +918,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// Helper for Com Callable Wrapper objects.  (CCWs are CLR objects exposed to native code as COM
     /// objects).
     /// </summary>
-    public abstract class CcwData : ICcwData
+    public abstract class CcwData
     {
         /// <summary>
         /// Returns the pointer to the IUnknown representing this CCW.
@@ -872,7 +1018,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Represents a method on a class.
     /// </summary>
-    public abstract class ClrMethod : IClrMethod
+    public abstract class ClrMethod
     {
         /// <summary>
         /// Retrieves the first MethodDesc in EnumerateMethodDescs().  For single
@@ -1015,7 +1161,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Returns the addresses and sizes of the hot and cold regions of a method.
     /// </summary>
-    public class HotColdRegions : IHotColdRegions
+    public class HotColdRegions
     {
         /// <summary>
         /// Returns the start address of the method's hot region.
@@ -1038,7 +1184,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Returns information about the IL for a method.
     /// </summary>
-    public class ILInfo : IIlInfo
+    public class ILInfo
     {
         /// <summary>
         /// The address in memory of where the IL for a particular method is located.
@@ -1065,4 +1211,42 @@ namespace Microsoft.Diagnostics.Runtime
         /// </summary>
         public uint LocalVarSignatureToken { get; internal set; }
     }
+
+    /// <summary>
+    /// A method's mapping from IL to native offsets.
+    /// </summary>
+    public struct ILToNativeMap
+    {
+        /// <summary>
+        /// The IL offset for this entry.
+        /// </summary>
+        public int ILOffset;
+
+        /// <summary>
+        /// The native start offset of this IL entry.
+        /// </summary>
+        public ulong StartAddress;
+
+        /// <summary>
+        /// The native end offset of this IL entry.
+        /// </summary>
+        public ulong EndAddress;
+
+        /// <summary>
+        /// To string.
+        /// </summary>
+        /// <returns>A visual display of the map entry.</returns>
+        public override string ToString()
+        {
+            return string.Format("{0,2:X} - [{1:X}-{2:X}]", ILOffset, StartAddress, EndAddress);
+        }
+
+#pragma warning disable 0169
+        /// <summary>
+        /// Reserved.
+        /// </summary>
+        private int _reserved;
+#pragma warning restore 0169
+    }
+
 }

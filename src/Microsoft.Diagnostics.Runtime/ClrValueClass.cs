@@ -4,14 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Triage.Mortician.Core.ClrMdAbstractions;
 
 namespace Microsoft.Diagnostics.Runtime
 {
     /// <summary>
     /// Represents an instance of a type which inherits from System.ValueClass
     /// </summary>
-    public struct ClrValueClass : IClrValueClass
+    public struct ClrValueClass
     {
         private ulong _address;
         private bool _interior;

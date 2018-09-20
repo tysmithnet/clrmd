@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using Triage.Mortician.Core.ClrMdAbstractions;
 
 namespace Microsoft.Diagnostics.Runtime
 {
     /// <summary>
     /// Represents an AppDomain in the target runtime.
     /// </summary>
-    public abstract class ClrAppDomain : IClrAppDomain
+    public abstract class ClrAppDomain
     {
         /// <summary>
         /// Gets the runtime associated with this ClrAppDomain.
