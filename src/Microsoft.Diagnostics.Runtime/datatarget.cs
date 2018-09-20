@@ -14,87 +14,16 @@ using System.Text;
 using System.Threading;
 using Microsoft.Diagnostics.Runtime.ICorDebug;
 using System.Text.RegularExpressions;
+using Triage.Mortician.Core.ClrMdAbstractions;
+using Core = Triage.Mortician.Core.ClrMdAbstractions;
 
 namespace Microsoft.Diagnostics.Runtime
 {
     /// <summary>
-    /// Represents the version of a DLL.
-    /// </summary>
-    [Serializable]
-    public struct VersionInfo
-    {
-        /// <summary>
-        /// In a version 'A.B.C.D', this field represents 'A'.
-        /// </summary>
-        public int Major;
-
-        /// <summary>
-        /// In a version 'A.B.C.D', this field represents 'B'.
-        /// </summary>
-        public int Minor;
-
-        /// <summary>
-        /// In a version 'A.B.C.D', this field represents 'C'.
-        /// </summary>
-        public int Revision;
-
-        /// <summary>
-        /// In a version 'A.B.C.D', this field represents 'D'.
-        /// </summary>
-        public int Patch;
-
-        internal VersionInfo(int major, int minor, int revision, int patch)
-        {
-            Major = major;
-            Minor = minor;
-            Revision = revision;
-            Patch = patch;
-        }
-
-        /// <summary>
-        /// To string.
-        /// </summary>
-        /// <returns>The A.B.C.D version prepended with 'v'.</returns>
-        public override string ToString()
-        {
-            return string.Format("v{0}.{1}.{2}.{3:D2}", Major, Minor, Revision, Patch);
-        }
-    }
-
-    /// <summary>
-    /// Returns the "flavor" of CLR this module represents.
-    /// </summary>
-    public enum ClrFlavor
-    {
-        /// <summary>
-        /// This is the full version of CLR included with windows.
-        /// </summary>
-        Desktop = 0,
-
-        /// <summary>
-        /// This originally was for Silverlight and other uses of "coreclr", but now
-        /// there are several flavors of coreclr, some of which are no longer supported.
-        /// </summary>
-        [Obsolete]
-        CoreCLR = 1,
-
-        /// <summary>
-        /// Used for .Net Native.
-        /// </summary>
-        [Obsolete(".Net Native support is being split out of this library into a different one.")]
-        Native = 2,
-
-        /// <summary>
-        /// For .Net Core
-        /// </summary>
-        Core = 3
-    }
-
-    /// <summary>
     /// Represents information about a single Clr runtime in a process.
     /// </summary>
     [Serializable]
-    public class ClrInfo : IComparable
+    public class ClrInfo : IComparable, IClrInfo
     {
         /// <summary>
         /// The version number of this runtime.
@@ -289,39 +218,12 @@ namespace Microsoft.Diagnostics.Runtime
         }
     }
 
-    /// <summary>
-    /// Specifies how to attach to a live process.
-    /// </summary>
-    public enum AttachFlag
-    {
-        /// <summary>
-        /// Performs an invasive debugger attach.  Allows the consumer of this API to control the target
-        /// process through normal IDebug function calls.  The process will be paused.
-        /// </summary>
-        Invasive,
-
-        /// <summary>
-        /// Performs a non-invasive debugger attach.  The process will be paused by this attached (and
-        /// for the duration of the attach) but the caller cannot control the target process.  This is
-        /// useful when there's already a debugger attached to the process.
-        /// </summary>
-        NonInvasive,
-
-        /// <summary>
-        /// Performs a "passive" attach, meaning no debugger is actually attached to the target process.
-        /// The process is not paused, so queries for quickly changing data (such as the contents of the
-        /// GC heap or callstacks) will be highly inconsistent unless the user pauses the process through
-        /// other means.  Useful when attaching with ICorDebug (managed debugger), as you cannot use a
-        /// non-invasive attach with ICorDebug.
-        /// </summary>
-        Passive
-    }
 
     /// <summary>
     /// Information about a specific PDB instance obtained from a PE image.
     /// </summary>
     [Serializable]
-    public class PdbInfo
+    public class PdbInfo : IPdbInfo
     {
         /// <summary>
         /// The Guid of the PDB.
@@ -405,7 +307,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// Provides information about loaded modules in a DataTarget
     /// </summary>
     [Serializable]
-    public class ModuleInfo
+    public class ModuleInfo : IModuleInfo
     {
         /// <summary>
         /// The base address of the object.
@@ -573,7 +475,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// Represents the dac dll
     /// </summary>
     [Serializable]
-    public class DacInfo : ModuleInfo
+    public class DacInfo : ModuleInfo, IDacInfo
     {
         /// <summary>
         /// Returns the filename of the dac dll according to the specified parameters
@@ -617,34 +519,7 @@ namespace Microsoft.Diagnostics.Runtime
     }
 
 
-    /// <summary>
-    /// The result of a VirtualQuery.
-    /// </summary>
-    [Serializable]
-    public struct VirtualQueryData
-    {
-        /// <summary>
-        /// The base address of the allocation.
-        /// </summary>
-        public ulong BaseAddress;
 
-        /// <summary>
-        ///  The size of the allocation.
-        /// </summary>
-        public ulong Size;
-
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="addr">Base address of the memory range.</param>
-        /// <param name="size">The size of the memory range.</param>
-        public VirtualQueryData(ulong addr, ulong size)
-        {
-            BaseAddress = addr;
-            Size = size;
-        }
-    }
 
     /// <summary>
     /// An interface for reading data out of the target process.
@@ -766,30 +641,13 @@ namespace Microsoft.Diagnostics.Runtime
         uint ReadDwordUnsafe(ulong addr);
     }
 
-    /// <summary>
-    /// The type of crash dump reader to use.
-    /// </summary>
-    public enum CrashDumpReader
-    {
-        /// <summary>
-        /// Use DbgEng.  This allows the user to obtain an instance of IDebugClient through the
-        /// DataTarget.DebuggerInterface property, at the cost of strict threading requirements.
-        /// </summary>
-        DbgEng,
 
-        /// <summary>
-        /// Use a simple dump reader to read data out of the crash dump.  This allows processing
-        /// multiple dumps (using separate DataTargets) on multiple threads, but the
-        /// DataTarget.DebuggerInterface property will return null.
-        /// </summary>
-        ClrMD
-    }
 
 
     /// <summary>
     /// A crash dump or live process to read out of.
     /// </summary>
-    public abstract class DataTarget : IDisposable
+    public abstract class DataTarget : IDisposable, IDataTarget
     {
         /// <summary>
         /// Creates a DataTarget from a crash dump.
@@ -1453,7 +1311,7 @@ namespace Microsoft.Diagnostics.Runtime
         }
     }
 
-    internal unsafe class DbgEngDataReader : IDisposable, IDataReader
+    internal unsafe class DbgEngDataReader : IDisposable, IDataReader, Core.IDataReader
     {
         private static int s_totalInstanceCount = 0;
         private static bool s_needRelease = true;

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Triage.Mortician.Core.ClrMdAbstractions;
 
 namespace Microsoft.Diagnostics.Runtime
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// Represents an object in the target process.
     /// </summary>
     [DebuggerDisplay("Address={HexAddress}, Type={Type.Name}")]
-    public struct ClrObject : IEquatable<ClrObject>
+    public struct ClrObject : IEquatable<ClrObject>, IClrObject
     {
         private ulong _address;
         private ClrType _type;

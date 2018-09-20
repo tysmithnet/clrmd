@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Triage.Mortician.Core.ClrMdAbstractions;
 
 namespace Microsoft.Diagnostics.Runtime
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Represents a managed module in the target process.
     /// </summary>
-    public abstract class ClrModule
+    public abstract class ClrModule : IClrModule
     {
         internal virtual ulong Address { get { return 0; } }
 

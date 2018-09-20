@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using Triage.Mortician.Core.ClrMdAbstractions;
 
 namespace Microsoft.Diagnostics.Runtime
 {
@@ -15,7 +16,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// Represents a single runtime in a target process or crash dump.  This serves as the primary
     /// entry point for getting diagnostic information.
     /// </summary>
-    public abstract class ClrRuntime
+    public abstract class ClrRuntime : IClrRuntime
     {
         /// <summary>
         /// In .NET native crash dumps, we have a list of serialized exceptions objects. This property expose them as ClrException objects.
@@ -299,7 +300,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Provides information about CLR's threadpool.
     /// </summary>
-    public abstract class ClrThreadPool
+    public abstract class ClrThreadPool : IClrThreadPool
     {
         /// <summary>
         /// The total number of threadpool worker threads in the process.
@@ -379,41 +380,12 @@ namespace Microsoft.Diagnostics.Runtime
         public abstract ClrType Type { get; }
     }
 
-    /// <summary>
-    /// The type of work item this is.
-    /// </summary>
-    public enum WorkItemKind
-    {
-        /// <summary>
-        /// Unknown.
-        /// </summary>
-        Unknown,
 
-        /// <summary>
-        /// Callback for an async timer.
-        /// </summary>
-        AsyncTimer,
-
-        /// <summary>
-        /// Async callback.
-        /// </summary>
-        AsyncCallback,
-
-        /// <summary>
-        /// From ThreadPool.QueueUserWorkItem.
-        /// </summary>
-        QueueUserWorkItem,
-
-        /// <summary>
-        /// Timer delete callback.
-        /// </summary>
-        TimerDelete
-    }
 
     /// <summary>
     /// Represents a work item on CLR's thread pool (native side).
     /// </summary>
-    public abstract class NativeWorkItem
+    public abstract class NativeWorkItem : INativeWorkItem
     {
         /// <summary>
         /// The type of work item this is.
@@ -480,7 +452,7 @@ namespace Microsoft.Diagnostics.Runtime
     /// <summary>
     /// Represents a Clr handle in the target process.
     /// </summary>
-    public class ClrHandle
+    public class ClrHandle : IClrHandle
     {
         /// <summary>
         /// The address of the handle itself.  That is, *ulong == Object.
